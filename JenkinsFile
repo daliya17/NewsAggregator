@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "your-dockerhub-username/news-aggregator:latest"
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                sh './gradlew clean build'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh """
+                    docker build -t $DOCKER_IMAGE .
+                    docker push $DOCKER_IMAGE
+                """
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                sh """
+                    docker stop news-aggregator || true
+                    docker rm news-aggregator || true
+                    docker run -d --name news-aggregator -p 8080:8080 $DOCKER_IMAGE
+                """
+            }
+        }
+    }
+
+    triggers {
+        pollSCM('H/5 * * * *') // Poll SCM every 5 minutes
+    }
+}
