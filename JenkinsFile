@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "your-dockerhub-username/news-aggregator:latest"
+        DOCKER_IMAGE = "dalia33864/news-aggregator:latest"
     }
 
     stages {
@@ -14,7 +14,7 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                sh './gradlew clean build'
+                sh 'mvn clean package'
             }
         }
 
